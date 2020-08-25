@@ -1,0 +1,87 @@
+clc; clear;
+
+% Reading the image of the empty parking lot
+i = imread('C:\Users\user\Desktop\IP1 PAINT.png'); I = imresize(i,[256,256]);
+I1 = rgb2gray(I);
+
+% Reading the image when car are parked-1
+j = imread('C:\Users\user\Desktop\IP1 PAINT (2).png'); J = imresize(j,[256,256]);
+J1 = rgb2gray(J);
+
+% Text recognition from the parking lot via converting the image to binary form and using Optical Character Recognition (OCR). 
+con	= zeros(256,256);
+for i=1:256 for j=1:256
+var = 0;    if I1(i,j) == 0
+var = 255;
+ 
+end
+
+end end
+ 
+
+con(i,j) = var;
+ 
+output = ocr(con,'CharacterSet','0123456789','TextLayout','Block'); total_slots = sort(str2double(regexp(num2str(output.Text),'\d','match')))
+
+% Text recognition from the parking lot via binarizing the image and using
+% Optical Character Recognition (OCR).
+ 
+con1	= zeros(256,256); for i=1:256
+for j=1:256
+var = 0; if J1(i,j) == 0
+var = 255;
+ 
+end
+
+end end
+ 
+
+con1(i,j) = var;
+ 
+
+output_1 = ocr(con1,'CharacterSet','0123456789','TextLayout','Block'); unoccupied_1=sort(str2double(regexp(num2str(output_1.Text),'\d','match')))
+
+%Now to find out the locations occupied via the vehicle occupied_1 = setdiff(total_slots,unoccupied_1)
+
+%Plot the obtained results in corresponding figures figure;
+subplot(1,2,1) imshow(I) subplot(1,2,2)
+plot(total_slots,'x','MarkerSize',9); title('OUTPUT WHEN NO VEHICLE IS PARKED')
+set(gca,'xtick',[])
+legend('Slots available','NorthWestOutside') grid on
+
+figure subplot(1,2,1) imshow(J) subplot(1,2,2)
+plot(occupied_1,'o','MarkerSize',9) hold on plot(unoccupied_1,'x','MarkerSize',9) set(gca,'xtick',[])
+title('OUTPUT WHEN VEHICLE IS PARKED')
+legend('Slots unavailable’, ‘Slots available’, ‘Northwest') grid on
+
+% Contouring the image to locate the vehicle cont = zeros(256,256);
+for i = 1:256 for j = 1:256
+var = 0;
+if(J(i,j,1)>200 & J(i,j,2)>200 & J(i,j,3)<100)
+var = 255;
+end
+cont(i,j) = var;
+ 
+end end
+%binary conversion of image and finding boundaries via " bwperim " boundary = 1 - bwperim(cont,8);
+cont_3 = zeros(256,256,3); for	i = 1:256
+for j = 1:256
+var = 0;
+if(boundary(i,j) == 1)
+var = 0;
+cont_3(i,j,:) = var + J(i,j,:);
+ 
+else
+
+
+end end end figure
+ 
+
+cont_3(i,j,1) = 255;
+cont_3(i,j,2) = 0;
+cont_3(i,j,3) = 0;
+ 
+subplot(2,1,1) imshow(boundary)
+title('Contour of the image recognized') subplot(2,1,2)
+imshow(uint8(cont_3))
+title('Contour superimposed with input image')
